@@ -1,0 +1,25 @@
+# dependencies (NGĂN KHÔNG ĐẨY FILE RẤT LỚN)
+/node_modules
+/backend/node_modules
+/frontend/node_modules
+
+# Docker volumes and build cache
+db-data/
+/frontend/.next
+/frontend/.turbo
+
+# environment variables and secrets (NGĂN KHÔNG ĐẨY MẬT KHẨU)
+.env
+/backend/.env
+/frontend/.env
+.env.*.local
+.env.local
+
+# production artifacts
+/dist
+/build
+/out
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,91 @@
+# Xóa dòng version ở đây nếu muốn
+# version: '3.8' 
+
+services:
+  # 1. Backend Service (Node.js + Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cd_store_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file: ./.env
+    environment:
+      - DB_HOST=db # Trỏ đến service 'db'
+      - NODE_ENV=development
+    # --- ĐÃ SỬA KHỐI NÀY ---
+    depends_on:
+      db: # Tên service
+        condition: service_healthy # Đợi cho đến khi healthcheck báo OK
+    # --- HẾT KHỐI SỬA ---
+    networks:
+      - cd-store-network
+
+  # 2. Frontend Service (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cd_store_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+    networks:
+      - cd-store-network
+
+  # 3. Database Service (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: cd_store_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS} # Chỉ giữ lại 2 dòng này
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - cd-store-network
+    # --- ĐÃ THÊM KHỐI NÀY ---
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u$$MYSQL_USER", "-p$$MYSQL_ROOT_PASSWORD"] # Kiểm tra kết nối DB
+      interval: 10s # Kiểm tra mỗi 10 giây
+      timeout: 5s # Chờ tối đa 5 giây
+      retries: 5 # Thử lại 5 lần nếu thất bại
+    # --- HẾT KHỐI THÊM ---
+
+  # 4. phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: cd_store_pma
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: db # Trỏ đến service 'db'
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+    depends_on:
+      - db
+    networks:
+      - cd-store-network
+
+networks:
+  cd-store-network:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
