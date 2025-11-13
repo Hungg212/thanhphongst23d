@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { paymentAPI } from '@/lib/api';
@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-export default function StripeCheckoutPage() {
+function StripeCheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated } = useAuthStore();
@@ -88,7 +88,9 @@ export default function StripeCheckoutPage() {
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements: stripe.elements({ clientSecret }),
         confirmParams: {
-          return_url: `${window.location.origin}/checkout/success?orderId=${orderId}`,
+          return_url: typeof window !== 'undefined' 
+            ? `${window.location.origin}/checkout/success?orderId=${orderId}`
+            : `/checkout/success?orderId=${orderId}`,
         },
         redirect: 'if_required',
       });
@@ -141,6 +143,20 @@ export default function StripeCheckoutPage() {
         </form>
       </div>
     </>
+  );
+}
+
+export default function StripeCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto max-w-2xl px-4 py-16">
+        <div className="text-center">
+          <p className="text-lg text-gray-500">Đang tải...</p>
+        </div>
+      </div>
+    }>
+      <StripeCheckoutContent />
+    </Suspense>
   );
 }
 

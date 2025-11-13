@@ -38,6 +38,10 @@ services:
     env_file: ./.env
     environment:
       - DB_HOST=db # Trỏ đến service 'db'
+      - DB_NAME=${DB_NAME:-cd_store}
+      - DB_USER=${DB_USER:-root}
+      - DB_PASS=${DB_PASS}
+      - DB_PORT=3306
       - NODE_ENV=development
     # Đợi DB "khỏe" mới chạy
     depends_on:

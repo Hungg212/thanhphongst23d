@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { categoriesAPI } from '@/lib/api';
 
 interface Category {
@@ -9,7 +9,7 @@ interface Category {
   name: string;
 }
 
-export function ProductsFilter() {
+function ProductsFilterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -97,6 +97,22 @@ export function ProductsFilter() {
         </div>
       </form>
     </div>
+  );
+}
+
+export function ProductsFilter() {
+  return (
+    <Suspense fallback={
+      <div className="mb-8 bg-white p-4 rounded-lg border shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 h-10 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="sm:w-48 h-10 bg-gray-200 rounded-md animate-pulse"></div>
+          <div className="h-10 w-24 bg-gray-200 rounded-md animate-pulse"></div>
+        </div>
+      </div>
+    }>
+      <ProductsFilterContent />
+    </Suspense>
   );
 }
 

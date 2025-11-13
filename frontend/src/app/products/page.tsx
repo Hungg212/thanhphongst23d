@@ -4,6 +4,10 @@ import { Suspense } from "react";
 import { getApiUrl } from "@/lib/server-api";
 import { ProductsFilter } from "./_components/ProductsFilter";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // --- Định nghĩa kiểu dữ liệu ---
 interface ProductVariant {
     id: number; productId: number; color: string; size: string; price: number; stock: number; image: string;
